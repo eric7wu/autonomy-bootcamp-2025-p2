@@ -74,6 +74,15 @@ def main() -> int:
     #                          ↓ BOOTCAMPERS MODIFY BELOW THIS COMMENT ↓
     # =============================================================================================
     # Create a worker controller
+    controller = worker_controller.WorkerController()
+    
+    threading.Timer(HEARTBEAT_PERIOD * NUM_TRIALS, stop, (controller,)).start()
+    
+    heartbeat_sender_worker.heartbeat_sender_worker(
+        connection,
+        HEARTBEAT_PERIOD,
+        controller,
+    )
 
     # Create a multiprocess manager for synchronized queues
 
