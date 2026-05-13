@@ -51,14 +51,14 @@ def heartbeat_sender_worker(
     if not result:
         local_logger.error("Failed to create HeartbeatSender", True)
         return
-    
+
     assert heartbeat_sender_instance is not None
-    
+
     heartbeat_count = 0
     while not controller.is_exit_requested():
         controller.check_pause()
         time.sleep(heartbeat_period)
-    
+
         result = heartbeat_sender_instance.run()
         if not result:
             local_logger.error("Failed to send heartbeat", True)
@@ -66,7 +66,7 @@ def heartbeat_sender_worker(
 
         heartbeat_count += 1
         local_logger.info(f"Sent heartbeat #{heartbeat_count}", True)
-    
+
     # Main loop: do work.
 
 
