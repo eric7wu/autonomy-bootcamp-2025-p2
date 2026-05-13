@@ -71,34 +71,37 @@ class Telemetry:
     """
 
     __private_key = object()
+    timeout_seconds = 1.0
 
     @classmethod
     def create(
         cls,
         connection: mavutil.mavfile,
-        args,  # Put your own arguments here
         local_logger: logger.Logger,
-    ):
+    ) -> "tuple[bool, Telemetry | None]":
         """
         Falliable create (instantiation) method to create a Telemetry object.
         """
-        pass  # Create a Telemetry object
+        if connection is None:
+            local_logger.error("Telemetry requires a MAVLink connection", True)
+            return False, None
+
+        return True, Telemetry(cls.__private_key, connection, local_logger)
 
     def __init__(
         self,
         key: object,
         connection: mavutil.mavfile,
-        args,  # Put your own arguments here
         local_logger: logger.Logger,
     ) -> None:
         assert key is Telemetry.__private_key, "Use create() method"
 
-        # Do any intializiation here
+        self.connection = connection
+        self.local_logger = local_logger
 
     def run(
         self,
-        args,  # Put your own arguments here
-    ):
+    ) -> "tuple[bool, TelemetryData | None, bool]": # prevent mixed meanings returning a single None
         """
         Receive LOCAL_POSITION_NED and ATTITUDE messages from the drone,
         combining them together to form a single TelemetryData object.
@@ -106,8 +109,47 @@ class Telemetry:
         # Read MAVLink message LOCAL_POSITION_NED (32)
         # Read MAVLink message ATTITUDE (30)
         # Return the most recent of both, and use the most recent message's timestamp
-        pass
+        start_time = time.time()
+        remaining_time = self.timeout_seconds
+        latest_position = None
+        latest_attitude = None
 
+        while remaining_time > 0.0 and (latest_position is None or latest_attitude is None):
+            msg = self.connection.recv_match(type=["LOCAL_POSITION_NED", "ATTITUDE"], timeout=remaining_time)
+
+            if msg is None:
+                break
+
+            if msg.get_type() == "LOCAL_POSITION_NED":
+                latest_position = msg
+            elif msg.get_type() == "ATTITUDE":
+                latest_attitude = msg
+
+            remaining_time = self.timeout_seconds - (time.time() - start_time)
+
+        if latest_position is None or latest_attitude is None:
+            self.local_logger.warning(
+                "Timed out waiting for ATTITUDE and LOCAL_POSITION_NED pair", True
+            )
+            return False, None, True
+
+        time_since_boot = max(latest_position.time_boot_ms, latest_attitude.time_boot_ms)
+        output = TelemetryData(
+            time_since_boot=time_since_boot,
+            x=latest_position.x,
+            y=latest_position.y,
+            z=latest_position.z,
+            x_velocity=latest_position.vx,
+            y_velocity=latest_position.vy,
+            z_velocity=latest_position.vz,
+            roll=latest_attitude.roll,
+            pitch=latest_attitude.pitch,
+            yaw=latest_attitude.yaw,
+            roll_speed=latest_attitude.rollspeed,
+            pitch_speed=latest_attitude.pitchspeed,
+            yaw_speed=latest_attitude.yawspeed,
+        )
+        return True, output, False
 
 # =================================================================================================
 #                            ↑ BOOTCAMPERS MODIFY ABOVE THIS COMMENT ↑
