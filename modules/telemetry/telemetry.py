@@ -101,7 +101,9 @@ class Telemetry:
 
     def run(
         self,
-    ) -> "tuple[bool, TelemetryData | None, bool]": # prevent mixed meanings returning a single None
+    ) -> (
+        "tuple[bool, TelemetryData | None, bool]"
+    ):  # prevent mixed meanings returning a single None
         """
         Receive LOCAL_POSITION_NED and ATTITUDE messages from the drone,
         combining them together to form a single TelemetryData object.
@@ -117,7 +119,7 @@ class Telemetry:
         while remaining_time > 0.0 and (latest_position is None or latest_attitude is None):
             msg = self.connection.recv_match(
                 type=["LOCAL_POSITION_NED", "ATTITUDE"],
-                blocking=True, #prevents the timeout warning from spamming in the logs
+                blocking=True,  # prevents the timeout warning from spamming in the logs
                 timeout=remaining_time,
             )
 
@@ -154,6 +156,7 @@ class Telemetry:
             yaw_speed=latest_attitude.yawspeed,
         )
         return True, output, False
+
 
 # =================================================================================================
 #                            ↑ BOOTCAMPERS MODIFY ABOVE THIS COMMENT ↑

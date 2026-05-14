@@ -67,7 +67,7 @@ def telemetry_worker(
             continue
 
         output_queue.queue.put(telemetry_data)
-        
+
         local_logger.info(f"Telemetry output: {telemetry_data}", True)
 
 
