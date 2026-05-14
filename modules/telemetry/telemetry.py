@@ -115,7 +115,11 @@ class Telemetry:
         latest_attitude = None
 
         while remaining_time > 0.0 and (latest_position is None or latest_attitude is None):
-            msg = self.connection.recv_match(type=["LOCAL_POSITION_NED", "ATTITUDE"], timeout=remaining_time)
+            msg = self.connection.recv_match(
+                type=["LOCAL_POSITION_NED", "ATTITUDE"],
+                blocking=True, #prevents the timeout warning from spamming in the logs
+                timeout=remaining_time,
+            )
 
             if msg is None:
                 break
