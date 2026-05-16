@@ -67,7 +67,7 @@ def read_queue(
     Read and print the output queue.
     """
     while True:
-        if controller.is_exit_requested() and output_queue.queue.empty():
+        if controller.is_exit_requested():
             return
 
         try:

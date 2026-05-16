@@ -34,6 +34,7 @@ HEARTBEAT_SENDER_WORKER_COUNT = 1
 HEARTBEAT_RECEIVER_WORKER_COUNT = 1
 TELEMETRY_WORKER_COUNT = 1
 COMMAND_WORKER_COUNT = 1
+QUEUE_MAX_SIZE = 10
 
 # Any other constants
 HEARTBEAT_PERIOD = 1.0
@@ -93,9 +94,9 @@ def main() -> int:
     mp_manager = mp.Manager()
 
     # Create queues
-    heartbeat_to_main_queue = queue_proxy_wrapper.QueueProxyWrapper(mp_manager, 0)
-    telemetry_to_command_queue = queue_proxy_wrapper.QueueProxyWrapper(mp_manager, 0)
-    command_to_main_queue = queue_proxy_wrapper.QueueProxyWrapper(mp_manager, 0)
+    heartbeat_to_main_queue = queue_proxy_wrapper.QueueProxyWrapper(mp_manager, QUEUE_MAX_SIZE)
+    telemetry_to_command_queue = queue_proxy_wrapper.QueueProxyWrapper(mp_manager, QUEUE_MAX_SIZE)
+    command_to_main_queue = queue_proxy_wrapper.QueueProxyWrapper(mp_manager, QUEUE_MAX_SIZE)
 
     # Create worker properties for each worker type (what inputs it takes, how many workers)
     # Heartbeat sender

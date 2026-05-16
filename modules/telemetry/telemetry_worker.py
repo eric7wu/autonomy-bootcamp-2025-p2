@@ -49,7 +49,7 @@ def telemetry_worker(
     # Instantiate class object (telemetry.Telemetry)
     result, telemetry_instance = telemetry.Telemetry.create(connection, local_logger)
     if not result or telemetry_instance is None:
-        local_logger.error("Failed to create Telemtry", True)
+        local_logger.error("Failed to create Telemetry", True)
         return
 
     # Main loop: do work.
